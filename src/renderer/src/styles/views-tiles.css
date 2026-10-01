@@ -1,0 +1,315 @@
+/* ==================================================================
+ * 磁贴 / 多选 / 恢复提示 的补充样式（对应 TaskTile / TileGrid /
+ * SelectionToolbar / RestoreToast）
+ * ------------------------------------------------------------------
+ * 约定（与其他 views-*.css 一致）：
+ *   - 颜色/间距/动效只用 tokens.css 里的 CSS 变量，禁止写死色值
+ *   - 新增类名前缀：sel-（多选工具条/复选框）、restore-（恢复提示）、
+ *     tile-（磁贴补充样式）
+ *   - 选择器权重刻意比 layout.css 的同名规则高一点（多写一层 .tile 等），
+ *     因为本文件由组件自行 import，加载顺序不保证在 layout.css 之后。
+ * ================================================================== */
+
+/* ==================== 磁贴：元信息三行（§2.2） ==================== */
+
+/*
+ * 缺失字段用统一文案占位，同时做弱化处理：
+ * 既要「告知用户没有明确信息」，又不能喧宾夺主，所以降一档颜色并略微透明。
+ */
+.tile .tile-meta-row.is-unknown {
+  color: var(--text-tertiary);
+  opacity: 0.72;
+}
+
+/* 名称缺失（手动任务还没填名字）时的弱化样式，与上面三行保持同一口径 */
+.tile .tile-name.is-unknown {
+  color: var(--text-tertiary);
+  opacity: 0.72;
+}
+
+/*
+ * 1×1 紧凑排版：一行都不能少，只能压缩字号与行距、单行省略。
+ * 需求原文允许「小字号、单行省略」，但明确禁止「把信息截掉不显示」。
+ */
+.tile.tile-compact {
+  padding: 10px 11px 11px 13px;
+  gap: 4px;
+}
+.tile.tile-compact .tile-name {
+  font-size: var(--fs-sm);
+  -webkit-line-clamp: 2;
+}
+.tile.tile-compact .tile-type {
+  font-size: 10px;
+}
+.tile.tile-compact .tile-meta {
+  gap: 2px;
+  font-size: 10px;
+}
+
+/* ==================== 磁贴：多选态（§3） ==================== */
+
+/* 选中：用主题色描边圈一圈，配合左上角对勾，一眼看出选中范围 */
+.tile.is-selected,
+.tile.is-selected:hover {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-dim), var(--shadow-md);
+  background: var(--bg-surface-hover);
+}
+
+/*
+ * 左上角复选框（自绘，参照手机相册）。
+ * 只在多选模式下渲染，所以这里不必处理"普通模式隐藏"。
+ */
+.tile .sel-check {
+  position: absolute;
+  top: 8px;
+  left: 9px;
+  z-index: 3;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 1.6px solid var(--border-strong);
+  background: rgba(0, 0, 0, 0.45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-on-accent);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+.tile .sel-check:hover {
+  border-color: var(--border-hover);
+}
+.tile .sel-check.is-on {
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.tile .sel-check:active {
+  transform: scale(0.9);
+}
+
+/* ==================== 磁贴：已删除分类的「恢复」（§4） ==================== */
+
+/* 单个大按钮铺满整个操作区 */
+.tile-actions.is-single .tile-action {
+  flex: 1 1 100%;
+}
+.tile-action-restore {
+  color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 18%, rgba(20, 20, 24, 0.85));
+}
+.tile-action-restore:hover {
+  background: color-mix(in srgb, var(--ok) 30%, rgba(20, 20, 24, 0.85));
+}
+
+/* ==================== 多选工具条（§3） ==================== */
+
+.sel-toolbar {
+  position: sticky;
+  top: 0;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  padding: 9px 12px;
+  margin-bottom: 16px;
+  border: 1px solid var(--accent-border);
+  border-radius: var(--radius-md);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+}
+
+.sel-count {
+  font-size: var(--fs-md);
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+.sel-count strong {
+  font-size: var(--fs-lg);
+  color: var(--text-primary);
+  margin: 0 2px;
+}
+.sel-count-total {
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+}
+
+.sel-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-left: auto;
+}
+
+.sel-divider {
+  width: 1px;
+  height: 18px;
+  background: var(--border-default);
+  flex: 0 0 auto;
+}
+
+/*
+ * 需要「长按确认」的红按钮（一键清除 / 批量彻底删除）。
+ * 与 .btn 不同：它由 LongPressButton 渲染，内部还会塞进度条，
+ * 所以要 relative + overflow:hidden，颜色取与「删除」相同的红色。
+ */
+.sel-danger-btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 5px 10px;
+  border-radius: var(--radius-sm);
+  border: 1px solid color-mix(in srgb, var(--danger) 45%, transparent);
+  background: var(--danger-dim);
+  color: var(--danger);
+  font-size: var(--fs-sm);
+  font-weight: 500;
+  line-height: 1;
+  white-space: nowrap;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+.sel-danger-btn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--danger) 26%, transparent);
+}
+/* 长按蓄力中：与磁贴按钮一样给一点辉光，提示"正在生效" */
+.sel-danger-btn.is-holding {
+  text-shadow: 0 0 12px currentColor;
+}
+
+/* 底部：取消多选。
+ * 用 fixed 而不是 sticky —— 组件的 DOM 位置由外壳决定，
+ * 万一被放在磁贴区之前，sticky 的底栏会跑到顶部去；fixed 则与放置位置无关。
+ * z-index 取 40：要盖住磁贴，但必须低于弹窗（--z-modal 200），
+ * 否则"已删除一键清除"的二次确认弹窗会被这条底栏压住。 */
+.sel-bottom {
+  position: fixed;
+  left: 50%;
+  bottom: 14px;
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  max-width: min(560px, 92vw);
+  padding: 8px 14px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+}
+.sel-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+/* ==================== 恢复提示框（§4） ==================== */
+
+/*
+ * 位置：页面上方中部。整层 pointer-events:none —— 需求要求
+ * 「不阻塞其他操作」，所以绝不能有全屏遮罩，也不能吃掉点击。
+ */
+.restore-layer {
+  position: fixed;
+  top: calc(var(--topbar-height) + 12px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: var(--z-toast);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: min(440px, 92vw);
+  pointer-events: none;
+}
+
+.restore-toast {
+  position: relative;
+  overflow: hidden;
+  pointer-events: auto; /* 只有卡片本身可交互（点小叉关闭） */
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  width: 100%;
+  padding: 10px 34px 12px 12px; /* 右侧留出小叉的位置 */
+  border-radius: var(--radius-md);
+  border: 1px solid color-mix(in srgb, var(--ok) 45%, transparent);
+  border-left: 3px solid var(--ok);
+  background: var(--bg-elevated);
+  box-shadow: var(--shadow-md);
+  animation: restore-drop var(--dur-normal) var(--ease-out);
+}
+
+@keyframes restore-drop {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.restore-icon {
+  flex: 0 0 auto;
+  display: flex;
+  color: var(--ok);
+}
+
+.restore-text {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: var(--fs-base);
+  color: var(--text-primary);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.restore-text strong {
+  font-weight: 600;
+}
+
+/* 右上角的小叉 */
+.restore-close {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 20px;
+  height: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  color: var(--text-tertiary);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+.restore-close:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: var(--text-primary);
+}
+
+/* 倒数进度条：从满到空（与按钮确认条方向相反） */
+.restore-bar {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.08);
+}
+.restore-bar-fill {
+  display: block;
+  height: 100%;
+  background: var(--ok);
+}
+
+/* 尊重系统的「减少动效」偏好：进度条仍由 rAF 驱动，这里只关掉入场动画 */
+@media (prefers-reduced-motion: reduce) {
+  .restore-toast {
+    animation: none;
+  }
+}

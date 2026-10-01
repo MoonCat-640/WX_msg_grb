@@ -1,0 +1,46 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      内容安全策略（CSP）
+      ------------------------------------------------------------------
+      这是本地桌面应用，按最小权限原则收紧：
+        - script-src 'self'          ：只允许加载本应用自己的脚本（防注入）
+        - style-src 'unsafe-inline'  ：React 的内联 style 属性需要它
+        - img-src data: blob:        ：头像与预览图可能是 data URL
+        - connect-src 本机回环      ：只允许访问 wechat_exp 本地服务
+                                      （LLM API 由主进程发起，不受此处限制）
+        - frame-src 'none'           ：本应用不需要任何内嵌框架
+    -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self';
+               script-src 'self';
+               style-src 'self' 'unsafe-inline';
+               img-src 'self' data: blob: http://127.0.0.1:* http://localhost:*;
+               font-src 'self' data:;
+               connect-src 'self' http://127.0.0.1:* http://localhost:* ws://localhost:* ws://127.0.0.1:*;
+               media-src 'self' data: blob: http://127.0.0.1:*;
+               frame-src 'none';
+               object-src 'none';
+               base-uri 'none';"
+    />
+    <title>微信消息任务汇总器</title>
+    <style>
+      /* 首帧兜底：脚本还没加载完时的底色，避免白色闪屏 */
+      html,
+      body {
+        margin: 0;
+        background: #17171a;
+        color: #e8eaed;
+        font-family: "Microsoft YaHei UI", "Microsoft YaHei", system-ui, sans-serif;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

@@ -1,0 +1,55 @@
+{
+  "name": "wx-msg-grb",
+  "version": "1.0.0",
+  "description": "微信消息任务汇总器与展示台 (WX_msg_grb)",
+  "main": "./out/main/index.js",
+  "private": true,
+  "license": "MIT",
+  "author": "MoonCat-640",
+  "homepage": "https://github.com/MoonCat-640/WX_msg_grb#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MoonCat-640/WX_msg_grb.git"
+  },
+  "bugs": {
+    "url": "https://github.com/MoonCat-640/WX_msg_grb/issues"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "electron-vite dev",
+    "build": "electron-vite build",
+    "preview": "electron-vite preview",
+    "typecheck:node": "tsc --noEmit -p tsconfig.node.json",
+    "typecheck:web": "tsc --noEmit -p tsconfig.web.json",
+    "typecheck": "npm run typecheck:node && npm run typecheck:web",
+    "selftest": "node scripts/core-logic.selftest.cjs",
+    "dist": "npm run build && electron-builder --win --config electron-builder.yml",
+    "dist:dir": "npm run build && electron-builder --win --dir --config electron-builder.yml",
+    "postinstall": "node scripts/postinstall-check.js"
+  },
+  "dependencies": {
+    "sql.js": "^1.13.0"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.0",
+    "@types/react": "^19.2.0",
+    "@types/react-dom": "^19.2.0",
+    "@types/sql.js": "^1.4.9",
+    "@vitejs/plugin-react": "^5.2.0",
+    "electron": "^44.4.5",
+    "electron-builder": "^26.15.3",
+    "electron-vite": "^5.0.0",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "typescript": "^5.9.3",
+    "vite": "^7.3.6"
+  },
+  "allowScripts": {
+    "electron@44.4.5": true,
+    "electron-winstaller@5.4.0": true,
+    "esbuild@0.25.12": true,
+    "esbuild@0.28.2": true
+  }
+}

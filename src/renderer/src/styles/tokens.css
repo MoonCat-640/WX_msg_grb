@@ -1,0 +1,129 @@
+/* ==================================================================
+ * 设计令牌（Design Tokens）
+ * ------------------------------------------------------------------
+ * 需求：整体暗色调，参考 Google Chrome 黑色主题，平面化、标签页化，
+ *       支持 2560×1600 / 1920×1080 等高分辨率，观感现代。
+ *
+ * 所有颜色/尺寸只在这里定义一次，组件里不允许写死色值。
+ * ================================================================== */
+
+:root {
+  /* ---------- 层次背景（越靠上层越亮） ---------- */
+  --bg-app: #17171a;          /* 应用最底色 */
+  --bg-sidebar: #1c1c20;      /* 左侧类别栏 */
+  --bg-content: #1f1f23;      /* 右侧内容区 */
+  --bg-surface: #26262b;      /* 面板 / 磁贴 */
+  --bg-surface-hover: #2e2e34;/* 磁贴悬停 */
+  --bg-elevated: #2b2b31;     /* 弹窗、抽屉 */
+  --bg-input: #202024;        /* 输入框 */
+  --bg-scrim: rgba(0, 0, 0, 0.6); /* 遮罩 */
+
+  /* ---------- 文本 ---------- */
+  --text-primary: #e8eaed;
+  --text-secondary: #9aa0a6;
+  --text-tertiary: #6e7175;
+  --text-on-accent: #0f1012;
+
+  /* ---------- 描边 ---------- */
+  --border-subtle: rgba(255, 255, 255, 0.07);
+  --border-default: rgba(255, 255, 255, 0.12);
+  --border-strong: rgba(255, 255, 255, 0.28);
+  /* 悬停时的高亮白边（需求：从无明显包边变为有白色包边） */
+  --border-hover: rgba(255, 255, 255, 0.85);
+
+  /* ---------- 主题色（Chrome 蓝） ---------- */
+  --accent: #8ab4f8;
+  --accent-strong: #a8c7fa;
+  --accent-dim: rgba(138, 180, 248, 0.16);
+  --accent-border: rgba(138, 180, 248, 0.45);
+
+  /* ---------- 语义色 ---------- */
+  --ok: #81c995;              /* 完成（需求：绿色系） */
+  --ok-dim: rgba(129, 201, 149, 0.16);
+  --danger: #f28b82;          /* 删除（需求：红色系） */
+  --danger-dim: rgba(242, 139, 130, 0.16);
+  --warn: #fdd663;            /* 未开始 / 提醒 */
+  --warn-dim: rgba(253, 214, 99, 0.16);
+  --info: #8ab4f8;
+  --info-dim: rgba(138, 180, 248, 0.16);
+  --muted: #9aa0a6;
+
+  /* ---------- 四个类别的主题色 ---------- */
+  --status-ongoing: #8ab4f8;  /* 进行中 —— 蓝 */
+  --status-upcoming: #fdd663; /* 未开始 —— 黄 */
+  --status-done: #81c995;     /* 已完成 —— 绿 */
+  --status-expired: #f28b82;  /* 已过期 —— 红 */
+
+  /* ---------- 尺寸 ---------- */
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-tile: 12px;
+  --sidebar-width: 232px;
+  --topbar-height: 52px;
+
+  /* ---------- 磁贴网格（Windows10 开始菜单风格） ----------
+   * 注意：尺寸要乘以 --ui-scale，否则在高分屏上磁贴会显得很小、
+   *       而网格计算是按真实像素走的，两者会错位。 */
+  --tile-size: calc(168px * var(--ui-scale));  /* 单元格边长 */
+  --tile-gap: calc(14px * var(--ui-scale));    /* 单元格间距 */
+  --tile-radius: 12px;
+
+  /* ---------- 阴影 ---------- */
+  --shadow-sm: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.45);
+  --shadow-lg: 0 18px 48px rgba(0, 0, 0, 0.6);
+  --shadow-tile-hover: 0 10px 28px rgba(0, 0, 0, 0.55);
+
+  /* ---------- 动效 ---------- */
+  --ease-out: cubic-bezier(0.2, 0, 0, 1);
+  --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+  --dur-fast: 120ms;
+  --dur-normal: 200ms;
+  --dur-slow: 320ms;
+
+  /* ---------- 字体 ---------- */
+  --font-sans: "Microsoft YaHei UI", "Microsoft YaHei", "PingFang SC",
+    "HarmonyOS Sans SC", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  --font-mono: "Cascadia Mono", "JetBrains Mono", Consolas, "Courier New", monospace;
+
+  --fs-xs: 11px;
+  --fs-sm: 12px;
+  --fs-base: 13px;
+  --fs-md: 14px;
+  --fs-lg: 16px;
+  --fs-xl: 20px;
+  --fs-2xl: 26px;
+
+  /* ---------- 层级 ---------- */
+  --z-tiles: 1;
+  --z-dragging: 50;
+  --z-sidebar: 10;
+  --z-topbar: 20;
+  --z-drawer: 100;
+  --z-modal: 200;
+  --z-toast: 300;
+}
+
+/*
+ * 高分辨率适配（需求：2560×1600 / 1920×1080 观感优雅）
+ * 屏幕越大，把基础尺寸和字号适当放大，避免大屏上元素显得过小。
+ * 用户也可以在「设置 → 界面缩放」里手动覆盖 --ui-scale。
+ */
+:root {
+  --ui-scale: 1;
+}
+
+@media (min-width: 1700px) {
+  :root { --ui-scale: 1.08; }
+}
+@media (min-width: 2300px) {
+  :root { --ui-scale: 1.18; }
+}
+
+/* 用户手动缩放：通过 data-ui-scale 属性覆盖媒体查询的结果 */
+html[data-ui-scale="0.9"] { --ui-scale: 0.9; }
+html[data-ui-scale="1"] { --ui-scale: 1; }
+html[data-ui-scale="1.1"] { --ui-scale: 1.1; }
+html[data-ui-scale="1.25"] { --ui-scale: 1.25; }
+html[data-ui-scale="1.4"] { --ui-scale: 1.4; }

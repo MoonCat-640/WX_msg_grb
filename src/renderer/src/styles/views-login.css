@@ -1,0 +1,763 @@
+/* ==================================================================
+ * 登录 / 账户 / LLM Key 相关视图样式
+ * ------------------------------------------------------------------
+ * 对应组件：
+ *   components/AccountButton.tsx     （复用 layout.css 的 .account-* 类）
+ *   components/AccountManager.tsx    （前缀 acct-）
+ *   components/LoginWizard.tsx       （前缀 wizard-）
+ *   components/LlmKeyDialog.tsx      （前缀 llm-）
+ *
+ * 约定：
+ *   - 颜色一律取 tokens.css 的 CSS 变量，禁止硬编码色值。
+ *     唯一沿用的「半透明白叠加」（rgba(255,255,255,0.0x)）在 layout.css /
+ *     components.css 里已是既成惯例（tokens 未对其单独定义变量），此处保持一致。
+ *   - 另一个例外是「已删除」分类的中性灰（指向 var(--muted)），不算写死色值。
+ *   （原「占位二维码必须白底黑块」的例外已随取消扫码登录一起删除。）
+ *   - 所有可交互元素都有 hover / 选中态，并带过渡动画。
+ * ================================================================== */
+
+/* ==================================================================
+ * 1. 账户管理（acct-）
+ * ================================================================== */
+
+.acct-body {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  padding-top: 4px;
+}
+
+.acct-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.acct-group-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.acct-group-title {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.acct-group-count {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+}
+
+.acct-notice {
+  /* notice 本身已有尺寸，这里只去掉多余的下外边距干扰 */
+  margin: 0;
+}
+
+.acct-list {
+  display: flex;
+  flex-direction: column;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-md);
+  background: rgba(255, 255, 255, 0.025);
+  overflow: hidden;
+}
+
+.acct-empty-line {
+  padding: 14px 14px;
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+}
+
+.acct-row {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  padding: 11px 13px;
+  border-bottom: 1px solid var(--border-subtle);
+  transition: background var(--dur-fast) var(--ease-out);
+}
+
+.acct-row:last-child {
+  border-bottom: none;
+}
+
+.acct-row:hover {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+/* 编辑态 / 确认态改用纵向排布，承载输入框与按钮 */
+.acct-row-edit,
+.acct-confirm {
+  align-items: flex-start;
+}
+
+.acct-confirm {
+  background: var(--danger-dim);
+}
+
+.acct-confirm-icon {
+  color: var(--danger);
+  margin-top: 4px;
+  flex: 0 0 auto;
+}
+
+.acct-main {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.acct-name-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.acct-name {
+  font-size: var(--fs-base);
+  font-weight: 500;
+}
+
+.acct-uid {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+.acct-tag {
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--accent-dim);
+  border: 1px solid var(--accent-border);
+  white-space: nowrap;
+}
+
+.acct-note {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* db_storage 目录：等宽 + 单行截断，完整路径靠 title 悬浮查看 */
+.acct-db {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  opacity: 0.85;
+}
+
+.acct-actions {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  flex: 0 0 auto;
+  margin-left: auto;
+}
+
+.acct-edit {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.acct-input {
+  width: 100%;
+}
+
+.acct-edit-foot {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+/* ==================================================================
+ * 2. 登录向导（wizard-）
+ * ================================================================== */
+
+.wizard-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-summary {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-size: var(--fs-base);
+  color: var(--text-secondary);
+}
+
+.wizard-summary b {
+  color: var(--accent);
+  font-size: var(--fs-md);
+}
+
+.wizard-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-base);
+}
+
+/* ---------- 平台卡片 ---------- */
+
+.wizard-plat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.wizard-plat {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 9px;
+  padding: 15px 15px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.wizard-plat:hover:not(:disabled) {
+  border-color: var(--border-hover);
+  background: var(--bg-surface-hover);
+  transform: translateY(-2px);
+}
+
+.wizard-plat:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.wizard-plat:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}
+
+.wizard-plat-color {
+  width: 26px;
+  height: 26px;
+  border-radius: 8px;
+  flex: 0 0 auto;
+}
+
+.wizard-plat-name {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.wizard-plat-count {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+}
+
+.wizard-plat-methods {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+}
+
+.wizard-method-tag {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  padding: 1px 7px;
+  border-radius: 999px;
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.wizard-plat-full {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  font-size: var(--fs-xs);
+  color: var(--warn);
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: var(--warn-dim);
+  border: 1px solid color-mix(in srgb, var(--warn) 35%, transparent);
+}
+
+/* ---------- 登录面板 ---------- */
+
+.wizard-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.wizard-back {
+  align-self: flex-start;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 8px 4px 4px;
+  border-radius: var(--radius-sm);
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.wizard-back:hover {
+  background: rgba(255, 255, 255, 0.07);
+  color: var(--text-primary);
+}
+
+.wizard-panel-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.wizard-panel-name {
+  font-size: var(--fs-lg);
+  font-weight: 600;
+}
+
+.wizard-panel-count {
+  font-size: var(--fs-xs);
+  color: var(--text-secondary);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid var(--border-subtle);
+}
+
+/* 本机识别区块：视觉上最重，因为它是本项目真实可用的登录路径 */
+.wizard-detect {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--accent-border);
+  background: var(--accent-dim);
+}
+
+.wizard-detect-title {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--fs-md);
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.wizard-detect-desc {
+  margin: 0;
+  font-size: var(--fs-sm);
+  line-height: 1.7;
+  color: var(--text-secondary);
+}
+
+.wizard-detect-result {
+  font-size: var(--fs-xs);
+  color: var(--accent);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+/* ---------- 分区 ---------- */
+
+.wizard-section {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 14px 16px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.022);
+}
+
+.wizard-section-title {
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.wizard-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.wizard-hint {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  line-height: 1.6;
+  word-break: break-word;
+}
+
+.wizard-dev {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 4px;
+}
+
+/* ---------- 占位二维码样式已随「取消扫码登录」移除（更新需求 §1） ---------- */
+/* 原 .wizard-qr / .wizard-qr-box / .wizard-qr-cell / .wizard-qr-warn / .wizard-qr-note
+   已删除：界面上不再有任何二维码，那段样式是死代码。 */
+
+/* ==========================================================================
+ * 账号添加向导（v2：只保留微信与 QQ，无扫码）
+ * 更新需求 §1 —— 取消扫码登录与企业微信；账号数量不设上限
+ * ========================================================================== */
+
+.wizard-platforms {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.wizard-platform {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto auto;
+  column-gap: 10px;
+  row-gap: 4px;
+  align-items: center;
+  padding: 14px;
+  text-align: left;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.028);
+  cursor: pointer;
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.wizard-platform:hover {
+  background: rgba(255, 255, 255, 0.06);
+  transform: translateY(-1px);
+}
+
+/* 选中态：用平台自己的主题色描边，一眼看出在配哪个平台 */
+.wizard-platform.is-active {
+  border-color: var(--platform-color, var(--accent-border));
+  background: color-mix(in srgb, var(--platform-color, var(--accent)) 10%, transparent);
+}
+
+.wizard-platform-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  grid-row: 1;
+}
+
+.wizard-platform-name {
+  grid-row: 1;
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.wizard-platform-count {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+.wizard-platform-hint {
+  grid-column: 1 / -1;
+  grid-row: 3;
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  line-height: 1.6;
+}
+
+/* ---------- 已添加账号清单 ---------- */
+
+.wizard-added {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--border-subtle);
+}
+
+.wizard-added-title {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  margin-bottom: 8px;
+}
+
+.wizard-added-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 0;
+  font-size: var(--fs-sm);
+  border-bottom: 1px solid var(--border-subtle);
+}
+
+.wizard-added-row:last-child {
+  border-bottom: none;
+}
+
+/* ---------- QQ 数据库选择列表 ---------- */
+
+.wizard-db-list {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 12px;
+  max-height: 168px;
+  overflow-y: auto;
+}
+
+.wizard-db {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.025);
+  cursor: pointer;
+  font-size: var(--fs-sm);
+  transition: background var(--dur-fast) var(--ease-out),
+    border-color var(--dur-fast) var(--ease-out);
+}
+
+.wizard-db:hover {
+  background: rgba(255, 255, 255, 0.065);
+}
+
+.wizard-db.is-active {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+/* ==================================================================
+ * 3. LLM API Key（llm-）
+ * ================================================================== */
+
+.llm-body {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.llm-security {
+  margin: 0;
+}
+
+.llm-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 48px 0;
+  color: var(--text-tertiary);
+  font-size: var(--fs-base);
+}
+
+.llm-hint {
+  font-size: var(--fs-sm);
+  color: var(--text-tertiary);
+  line-height: 1.7;
+}
+
+/* ---------- 平台网格（3×2） ---------- */
+
+.llm-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+
+.llm-card {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 5px;
+  min-width: 0;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-default);
+  background: var(--bg-surface);
+  text-align: left;
+  transition: border-color var(--dur-fast) var(--ease-out),
+    background var(--dur-fast) var(--ease-out), transform var(--dur-fast) var(--ease-out);
+}
+
+.llm-card:hover {
+  border-color: var(--border-hover);
+  background: var(--bg-surface-hover);
+  transform: translateY(-2px);
+}
+
+.llm-card:active {
+  transform: translateY(0);
+}
+
+/* 选中态：accent 描边 + accent 淡背景 */
+.llm-card.is-active {
+  border-color: var(--accent-border);
+  background: var(--accent-dim);
+}
+
+.llm-card-color {
+  width: 22px;
+  height: 22px;
+  border-radius: 7px;
+  flex: 0 0 auto;
+}
+
+.llm-card-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.llm-card-ok {
+  position: absolute;
+  top: 11px;
+  right: 11px;
+  width: 19px;
+  height: 19px;
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.llm-card-ok.is-ok {
+  color: var(--ok);
+  background: var(--ok-dim);
+}
+
+.llm-card-ok.is-bad {
+  color: var(--danger);
+  background: var(--danger-dim);
+}
+
+.llm-card-model {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  max-width: 100%;
+}
+
+.llm-card-price {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}
+
+.llm-card-masked {
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+  max-width: 100%;
+}
+
+/* ---------- 配置区 ---------- */
+
+.llm-config {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px 16px 16px;
+  border-radius: var(--radius-md);
+  border: 1px solid var(--border-subtle);
+  background: rgba(255, 255, 255, 0.022);
+}
+
+.llm-config-head {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+}
+
+.llm-config-name {
+  font-size: var(--fs-md);
+  font-weight: 600;
+}
+
+.llm-config-ok {
+  font-size: var(--fs-xs);
+  color: var(--ok);
+  padding: 1px 8px;
+  border-radius: 999px;
+  background: var(--ok-dim);
+  border: 1px solid color-mix(in srgb, var(--ok) 35%, transparent);
+}
+
+.llm-key-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.llm-key-masked {
+  font-size: var(--fs-sm);
+  color: var(--text-secondary);
+  padding: 6px 10px;
+  border-radius: var(--radius-sm);
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--border-subtle);
+}
+
+/* 输入框 + 右侧眼睛按钮 */
+.llm-key-input {
+  position: relative;
+  flex: 1 1 auto;
+  min-width: 0;
+}
+
+.llm-key-input input {
+  width: 100%;
+  padding-right: 34px;
+}
+
+.llm-eye {
+  position: absolute;
+  right: 4px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 26px;
+  height: 26px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--radius-sm);
+  color: var(--text-tertiary);
+  transition: background var(--dur-fast) var(--ease-out), color var(--dur-fast) var(--ease-out);
+}
+
+.llm-eye:hover {
+  background: rgba(255, 255, 255, 0.09);
+  color: var(--text-primary);
+}
+
+.llm-price-hint {
+  margin-top: -6px;
+  font-size: var(--fs-xs);
+  color: var(--text-tertiary);
+}

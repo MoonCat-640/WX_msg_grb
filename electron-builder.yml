@@ -1,0 +1,168 @@
+# ============================================================================
+# electron-builder 配置 —— WX_msg_grb（微信消息任务汇总器）
+# ----------------------------------------------------------------------------
+# 用法：
+#   npm run dist        # 先 electron-vite build，再按本文件打包
+#   或： npx electron-builder --win --config electron-builder.yml
+#
+# 打包产物（NSIS 安装包 + 免安装目录）输出到：
+#   <项目根目录>/release
+#
+# 每一项为什么这么配，见下面的注释。
+# ============================================================================
+
+# 打包产物（NSIS 安装包 + 免安装目录）输出到项目根目录下的 release/。
+# 用**相对路径**是为了让任何人 clone 下来都能直接 `npm run dist`；
+# scripts/build-release.ps1 会在打包后把成品整理/部署到它自己的目标目录。
+# （此前这里写死为 D:/Applications/WX_message/release，没有 D 盘的机器会直接构建失败。）
+
+# 应用唯一标识（Windows 上作为 AppUserModelID，用于任务栏/快捷方式归组）。
+# 需求里指定为 com.wxmsggrb.app。
+appId: com.wxmsggrb.app
+
+# 产品名。electron-builder 在 Windows 上默认用 productName 作为可执行文件名，
+# 所以这里必须是 ASCII 的 WX_msg_grb —— 需求明确要求生成 WX_msg_grb.exe。
+# （中文名“微信消息任务汇总器”只用于快捷方式名，见 nsis.shortcutName。）
+productName: WX_msg_grb
+
+# 版权信息（写入 exe 元数据，可留空）
+copyright: Copyright © 2026 微信消息任务汇总器
+
+# ----------------------------------------------------------------------------
+# 目录配置
+# ----------------------------------------------------------------------------
+directories:
+  # 打包产物输出目录：项目根目录下的 release/（相对路径，保证可移植）
+  output: release
+  # 构建资源目录（图标、NSIS 自定义脚本等）。installer.nsh 就在这里面。
+  buildResources: build
+
+# ----------------------------------------------------------------------------
+# 打包进 app.asar 的内容
+# ----------------------------------------------------------------------------
+# 只打 electron-vite 的产物 out/ 与 package.json；排除源码/文档/构建脚本，
+# 避免把开发文件带进安装包（体积 + 泄露源码）。
+# 生产依赖（node_modules 里的 sql.js）由 electron-builder 自动收集，无需在此声明。
+files:
+  - out/**/*
+  - package.json
+  - "!src/**/*"
+  - "!reference/**/*"
+  - "!docs/**/*"
+  - "!scripts/**/*"
+  - "!build/**/*"
+  - "!**/*.ts"
+  - "!**/*.map"
+  - "!**/tsconfig*.json"
+  - "!electron.vite.config.*"
+  - "!README*.md"
+
+# ----------------------------------------------------------------------------
+# asar 打包
+# ----------------------------------------------------------------------------
+asar: true
+
+# sql.js 会在运行时用文件路径去读它自带的 sql-wasm.wasm，asar 内的虚拟路径读不到，
+# 因此必须把整个 sql.js 解包到 app.asar.unpacked 下。
+asarUnpack:
+  - node_modules/sql.js/**
+
+# ----------------------------------------------------------------------------
+# extraResources（可选，当前故意不启用）
+# ----------------------------------------------------------------------------
+# 代码里 src/main/core/paths.ts 会在 exe 同级目录、tools/、resources/、
+# 以及打包内 resources/ 里查找 wechat_exp*.exe，所以并不强依赖打包内置。
+#
+# 注意：electron-builder 的 yml 不支持条件判断，如果写死
+#   extraResources:
+#     - from: resources
+# 一旦项目里没有 resources/ 目录，构建会直接报“source not found”而失败。
+# 目前仓库里也没有 resources/，因此这里先不启用；等确实要内置兜底副本时，
+# 建好 resources/ 目录并放入文件后，取消下面 3 行注释即可。
+#
+# extraResources:
+#   - from: resources
+#     to: resources
+#     filter: ["**/*"]
+
+# ----------------------------------------------------------------------------
+# Windows 目标
+# ----------------------------------------------------------------------------
+win:
+  # 同时产出两种形态：
+  #   nsis —— 安装包 Setup.exe
+  #   dir  —— 免安装版（release/win-unpacked），构建脚本会把它的内容拷到成品目录
+  target:
+    - nsis
+    - dir
+
+  # 显式锁定可执行文件名，确保是 WX_msg_grb.exe（默认取 productName，这里写死更保险）
+  executableName: WX_msg_grb
+
+  # 应用本体的执行级别。
+  #
+  # 这里用 asInvoker（不要求管理员）：
+  #   wechat_exp 官方文档明确写着，微信 4.1.10+ 走「只读 Config.Cipher 扫描」提取密钥，
+  #   **不需要管理员权限、不需要重启微信**。只有老版本微信的 Hook 方案才需要管理员。
+  #   而 requireAdministrator 会让**每次**启动都弹 UAC，还会让窗口无法接收从资源管理器
+  #   拖入的文件（UIPI 隔离），日常使用体验很差。
+  #
+  # 如果你用的微信版本较老（< 4.1.10）且自动提取密钥总是失败，改回：
+  #   requestedExecutionLevel: requireAdministrator
+  # 注意改后每次启动都会弹 UAC；此时也应把 nsis 段的 allowElevation 保持 true。
+  requestedExecutionLevel: asInvoker
+
+  # 图标：不显式指定。electron-builder 会自动找 build/icon.ico；
+  # 若以后放入 build/icon.ico 就会自动生效，没放也不会导致构建失败。
+
+# ----------------------------------------------------------------------------
+# NSIS 安装包配置（对应需求“模块 1：安装程序”）
+# ----------------------------------------------------------------------------
+nsis:
+  # 关闭一键安装，改为“引导式”安装向导，才会出现“选择语言/路径/用户范围”等页面
+  oneClick: false
+
+  # perMachine=false 时，引导模式会显示“为当前用户 / 为全体用户”选择页。
+  # （perMachine=true 会强制全体用户安装、不显示该选择页，故这里必须为 false。）
+  perMachine: false
+
+  # 允许在需要时请求 UAC 提权：
+  # 用户选择“为全体用户安装”时，点击“下一步”会弹出 UAC 提权框。
+  allowElevation: true
+
+  # 允许用户修改安装路径（需求要求），配合 oneClick=false 生效
+  allowToChangeInstallationDirectory: true
+
+  # 安装完成后创建快捷方式：桌面 + 开始菜单，
+  # 快捷方式名用中文产品名；它指向 exe（WX_msg_grb.exe）。
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: 微信消息任务汇总器
+
+  # 安装语言：中文简体 + 英文。
+  # displayLanguageSelector=true 会在安装开始时弹出语言选择对话框
+  # （需求“支持选择语言”靠它实现；只写 installerLanguages 时是按系统语言自动选）。
+  installerLanguages:
+    - zh_CN
+    - en_US
+  displayLanguageSelector: true
+  # 默认语言 LCID：2052 = 简体中文（优先中文）
+  language: "2052"
+
+  # 引入自定义 NSIS 片段：PATH 勾选页 + 写入/移除 PATH。
+  # 相对项目根目录（也可相对 buildResources）。默认其实就会找 build/installer.nsh，
+  # 这里显式写出，避免歧义。
+  include: build/installer.nsh
+
+  # 安装包文件名：WX_msg_grb-Setup-<版本>.exe
+  artifactName: WX_msg_grb-Setup-${version}.${ext}
+
+  # 卸载时不要删除用户数据目录。
+  # 原因：%APPDATA%\WX_msg_grb 下存有加密的任务数据（store.db.enc）、保险库
+  # （vault.json / vault.key）等，删掉会导致用户数据永久丢失；这些数据即使重装也应保留。
+  # 备注：该项在文档里标注为“one-click installer only”，我们用的是引导式安装，
+  # 本身也不会删 app data，这里显式写 false 只是明确表达意图。
+  deleteAppDataOnUninstall: false
+
+# 不配置自动发布（需求不需要把包推到 GitHub/OSS 等）
+publish: null
