@@ -143,8 +143,12 @@ wechat_exp.exe serve --host 127.0.0.1 --port <自动挑选的空闲端口，默�
 - `normalize.ts` — 上游 JSON → 本应用数据模型的映射（**字段映射都在这**）
 - `mock.ts` — 模拟数据
 
-字段映射的权威依据是 `docs/reference/wechat-exp-integration-contract.md`
-（对上游源码逐行调研产出的接口契约文档）。
+字段映射的权威依据是一份对上游源码逐行调研产出的接口契约文档
+（`docs/reference/wechat-exp-integration-contract.md`）。
+
+> ⚠️ 该契约文档**不随本仓库公开发布**（它包含微信密钥提取的内部细节，
+> 而本项目刻意不实现密钥提取）。公开仓库中该路径不存在，属预期情况；
+> 若你需要维护这一层，请自行对照上游源码重新调研。
 
 ---
 
@@ -398,7 +402,8 @@ Key 用 PBKDF2 派生的密钥加密后存进本地加密数据库，**日志与
 7. **wechat_exp 的接口是内部接口。**
    上游 README 完全没有记载 `/api/*`，字段可能随版本变化。若某天读不到数据，
    先看「运行日志」里 wechat_exp 的输出，再对照
-   `docs/reference/wechat-exp-integration-contract.md` 检查字段映射。
+   `src/main/wechat/normalize.ts` 检查字段映射。
+   （上一条提到的接口契约文档不随公开仓库发布，见第五节末尾的说明。）
 
 8. **任务抽取的质量取决于模型与提示词。**
    提示词在 `src/main/tasks/prompt.ts`，去重阈值在 `src/main/tasks/dedup.ts`
