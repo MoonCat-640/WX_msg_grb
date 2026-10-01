@@ -57,14 +57,13 @@
 
 ## 截图
 
-> 📷 待补充：请在此处放 1–2 张主界面截图（磁贴墙 + 任务详情）。
->
-> 建议将图片放到 `docs/images/` 下再引用，例如：
->
-> ```markdown
-> ![主界面](docs/images/main.png)
-> ![任务详情](docs/images/detail.png)
-> ```
+**任务磁贴墙**（左侧分类栏 + 按状态着色的动态磁贴）：
+
+![主界面](docs/images/main.png)
+
+**任务详情面板**（材料清单、发布人、任务原文）：
+
+![任务详情](docs/images/detail.png)
 
 ---
 
